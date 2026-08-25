@@ -23,7 +23,7 @@ storefront_id() {
     gb|uk) echo 143444 ;;  ca) echo 143455 ;;  au) echo 143460 ;;
     it) echo 143450 ;;  ru) echo 143469 ;;  ua) echo 143492 ;;
     jp) echo 143462 ;;
-    es) echo "143454?" ;;  mx) echo "143468?" ;;  br) echo "143503?" ;;
+    es) echo 143454 ;;  mx) echo "143468?" ;;  br) echo "143503?" ;;
     nz) echo "143461?" ;;  kr) echo "143466?" ;;  nl) echo "143452?" ;;
     pl) echo "143478?" ;;  tr) echo "143480?" ;;  in) echo "143467?" ;;
     *) echo "" ;;
