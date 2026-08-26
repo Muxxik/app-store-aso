@@ -94,14 +94,18 @@ PY
     # Subtitle API не отдаёт — берём из HTML витрины. У Apple живут две
     # вёрстки (старая: h2 после h1; новая: p class="subtitle") — пробуем обе.
     # Если обе мимо, это сигнал обновить regex, а не что сабтайтла нет.
+    # Имя тоже берём из HTML: lookup API кэшируется дольше витрины и после
+    # релиза может сутки отдавать прошлую версию — витрина первичнее.
     curl -sL "https://apps.apple.com/${c}/app/id${app}" >"$tmp"
     python3 - "$tmp" <<'PY'
 import html, re, sys
 t = open(sys.argv[1], encoding='utf-8', errors='replace').read()
+h1 = re.search(r'<h1[^>]*>(.*?)</h1>', t, re.S)
+name = ' '.join(html.unescape(re.sub(r'<[^>]+>', ' ', h1.group(1))).split()) if h1 else '?'
 m = (re.search(r'<p class="subtitle[^"]*"[^>]*>([^<]*)</p>', t)
      or re.search(r'<h1[^>]*>.*?</h1>\s*<h2[^>]*>([^<]*)</h2>', t, re.S))
-print('     subtitle:', html.unescape(m.group(1)).strip() if m
-      else 'не разобран (пустой или вёрстка изменилась)')
+sub = html.unescape(m.group(1)).strip() if m else 'не разобран (пустой или вёрстка изменилась)'
+print(f'     витрина: {name!r} | subtitle: {sub}')
 PY
     sleep 2
   done
