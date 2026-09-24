@@ -62,10 +62,22 @@ suggest)
 apps)
   c="${2:?нужен код страны}"; term="${3:?нужен запрос}"; lim="${4:-10}"
   tmp=$(mktemp)
-  curl -s "https://itunes.apple.com/search?country=${c}&entity=software&limit=${lim}&term=$(enc "$term")" >"$tmp"
+  code=$(curl -s -o "$tmp" -w "%{http_code}" "https://itunes.apple.com/search?country=${c}&entity=software&limit=${lim}&term=$(enc "$term")")
+  if [ "$code" != "200" ]; then
+    # /search — недокументированный эндпоинт; Apple периодически отдаёт 403
+    # на IP (наблюдалось после ~сотни запросов за месяц; lookup и suggest при
+    # этом живы). Это блок, не «ничего не найдено».
+    echo "Apple вернула HTTP $code на /search — эндпоинт заблокирован для этого IP или изменился." >&2
+    echo "Запасные пути: позиции — ASO-сервис (ASO Mobile/AppTweak); имена конкурентов — автосаджест" >&2
+    echo "(suggest работает) и вкладка ТОП по ключу в ASO-сервисе; повторить попытку через несколько часов." >&2
+    rm -f "$tmp"; exit 2
+  fi
   python3 - "$tmp" <<'PY'
 import json, sys
-d = json.load(open(sys.argv[1]))
+try:
+    d = json.load(open(sys.argv[1]))
+except ValueError:
+    print("ответ не JSON — формат эндпоинта изменился, проверь вручную", file=sys.stderr); raise SystemExit(2)
 if not d.get("resultCount"):
     print("(ничего не найдено)"); raise SystemExit
 for i, r in enumerate(d["results"], 1):

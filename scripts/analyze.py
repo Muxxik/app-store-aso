@@ -54,9 +54,12 @@ def read_csv(path):
     hdr, data = None, {}
     for r in rows:
         if r and r[0] == 'Дата':
-            hdr = [c.split('— ')[-1].strip() for c in r[1:]]
+            # В заголовках ASC после тире встречается неразрывный пробел,
+            # а само тире бывает разным — режем регуляркой, не буквальным '— '.
+            hdr = [re.split(r'\s*[—–-]\s*', c.replace('\xa0', ' '), maxsplit=1)[-1].strip()
+                   for c in r[1:]]
             continue
-        if hdr and r and '.' in r[0]:
+        if hdr and r and r[0][:2].isdigit() and '.' in r[0]:
             d = datetime.datetime.strptime(r[0], '%d.%m.%Y').date()
             data[d] = {hdr[i]: float(r[1 + i] or 0) for i in range(min(len(hdr), len(r) - 1))}
     return hdr or [], data
