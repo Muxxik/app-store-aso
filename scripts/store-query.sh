@@ -24,8 +24,8 @@ storefront_id() {
     it) echo 143450 ;;  ru) echo 143469 ;;  ua) echo 143492 ;;
     jp) echo 143462 ;;
     es) echo 143454 ;;  mx) echo "143468?" ;;  br) echo "143503?" ;;
-    nz) echo "143461?" ;;  kr) echo "143466?" ;;  nl) echo "143452?" ;;
-    pl) echo "143478?" ;;  tr) echo "143480?" ;;  in) echo "143467?" ;;
+    nz) echo "143461?" ;;  kr) echo "143466?" ;;  nl) echo 143452 ;;  cz) echo 143489 ;;
+    pl) echo 143478 ;;  tr) echo 143480 ;;  in) echo "143467?" ;;
     *) echo "" ;;
   esac
 }
@@ -37,7 +37,7 @@ suggest)
   if ! [[ "$sf" =~ ^[0-9]+$ ]]; then
     mapped=$(storefront_id "$(echo "$sf" | tr '[:upper:]' '[:lower:]')")
     if [ -z "$mapped" ]; then
-      echo "Неизвестный код страны «$sf». Знаю: us fr de gb ca au it ru ua jp es mx br nz kr nl pl tr in" >&2
+      echo "Неизвестный код страны «$sf». Знаю: us fr de gb ca au it ru ua jp es mx br nz kr nl cz pl tr in" >&2
       echo "Либо передай числовой ID стора напрямую (карта в references/locales.md)." >&2
       exit 1
     fi
