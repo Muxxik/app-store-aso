@@ -108,7 +108,12 @@ PY
     # Если обе мимо, это сигнал обновить regex, а не что сабтайтла нет.
     # Имя тоже берём из HTML: lookup API кэшируется дольше витрины и после
     # релиза может сутки отдавать прошлую версию — витрина первичнее.
-    curl -sL "https://apps.apple.com/${c}/app/id${app}" >"$tmp"
+    hcode=$(curl -sL -o "$tmp" -w "%{http_code}" "https://apps.apple.com/${c}/app/id${app}")
+    if [ "$hcode" != "200" ]; then
+      # 429 — лимит на витрину (≈10+ страниц подряд); повторить через час.
+      echo "     витрина: HTTP $hcode — страница не отдана (429 = лимит, подожди час), поля НЕ проверены"
+      sleep 2; continue
+    fi
     python3 - "$tmp" <<'PY'
 import html, re, sys
 t = open(sys.argv[1], encoding='utf-8', errors='replace').read()
