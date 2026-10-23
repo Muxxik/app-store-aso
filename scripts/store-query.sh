@@ -4,6 +4,7 @@
 #   store-query.sh suggest <страна|storefrontId> "<префикс>"   — автосаджест
 #   store-query.sh apps    <country> "<запрос>" [limit] — приложения в выдаче
 #   store-query.sh live    <appId> <country> [country…] — что реально живёт в сторе
+#   store-query.sh versions <appId> <country>          — история версий с датами и заметками
 #
 # suggest принимает код страны (us, de, jp…) или числовой ID стора;
 # полная карта — в references/locales.md
@@ -129,8 +130,37 @@ PY
   rm -f "$tmp"
   ;;
 
+versions)
+  # Вся история версий (даты, номера, «что нового») лежит в HTML страницы
+  # приложения — в браузере виден только последний релиз до клика «Показать всё».
+  # Нужна, когда загрузки падают при стабильных позициях: совпадение ступени
+  # с чужим релизом скриншотов/имени — главный подозреваемый.
+  app="${2:?нужен id приложения}"; c="${3:?нужен код страны}"
+  tmp=$(mktemp)
+  hcode=$(curl -sL -A "Mozilla/5.0" -o "$tmp" -w "%{http_code}" "https://apps.apple.com/${c}/app/id${app}")
+  if [ "$hcode" != "200" ]; then
+    echo "HTTP $hcode — страница не отдана (429 = лимит, подожди час)"; rm -f "$tmp"; exit 2
+  fi
+  python3 - "$tmp" <<'PY'
+import html, re, sys
+t = open(sys.argv[1], encoding='utf-8', errors='replace').read()
+i = t.find('versionHistory","pageData"')
+if i < 0:
+    print("история версий не найдена (вёрстка изменилась?)"); raise SystemExit(1)
+chunk = t[i:i+200000]
+n = 0
+for m in re.finditer(r'"text":"((?:[^"\\]|\\.)*)"[^{}]*?"primarySubtitle":"([^"]+)","secondarySubtitle":"([^"]+)"', chunk):
+    notes = html.unescape(m.group(1)).replace('\\n', ' ').replace('\\"', '"')
+    notes = ' '.join(notes.split())
+    print(f'{m.group(3)[4:15]}  {m.group(2):<9} {notes[:150]}')
+    n += 1
+print(f'— {n} версий')
+PY
+  rm -f "$tmp"
+  ;;
+
 *)
-  sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
   exit 1
   ;;
 esac

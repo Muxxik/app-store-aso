@@ -40,6 +40,7 @@ A rule enters the skill as a **hypothesis with a pass/fail criterion written bef
 | `store-query.sh suggest us "night surv"` | Live App Store autosuggest for any storefront — what people actually type. Accepts country codes (20 verified storefront IDs built in) |
 | `store-query.sh apps us "tower defense rpg"` | Store search results with app IDs — competitor keyword bets in plain sight. Tells you plainly when Apple rate-blocks the endpoint (HTTP 403) and what to use instead |
 | `store-query.sh live <appId> us fr jp` | What's actually live per country: name and subtitle from the storefront HTML (the API caches a day behind) — catches silently dropped fields and the genre the store substitutes for an empty subtitle |
+| `store-query.sh versions <appId> fr` | Full version history of any app with dates and release notes, pulled from the store page HTML (the page shows only the latest). For diagnosing a downloads drop at stable rankings: who in the top 3 shipped new screenshots, and when |
 | `analyze.py event <impressions.csv> <downloads.csv>` | **Platform-event detector**: finds the date impressions stepped up across unrelated countries without downloads following, and tells you the clean window. Run before any before/after comparison |
 | `analyze.py asc <csv…>` | App Store Connect export analysis: periods, funnels, country ranking |
 | `analyze.py keywords <xlsx…>` | Competitor keyword export digest with brand-collision filtering |
